@@ -1,0 +1,61 @@
+{
+  "common": {
+    "appName": "CrackScan",
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "retry": "다시 시도",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "download": "다운로드"
+  },
+  "auth": {
+    "login": "로그인",
+    "signup": "회원가입",
+    "logout": "로그아웃",
+    "email": "이메일",
+    "password": "비밀번호",
+    "continueWithGoogle": "Google로 계속하기"
+  },
+  "dashboard": {
+    "title": "대시보드",
+    "noJobs": "검사 내역이 없습니다",
+    "newInspection": "새 검사 시작"
+  },
+  "upload": {
+    "title": "외벽 사진 업로드",
+    "dragDrop": "사진을 드래그하거나 클릭하여 업로드",
+    "maxFiles": "최대 10장",
+    "locationLabel": "건물명 (선택)",
+    "startAnalysis": "분석 시작",
+    "analyzing": "분석 중..."
+  },
+  "job": {
+    "status": {
+      "pending": "대기",
+      "processing": "분석 중",
+      "completed": "완료",
+      "failed": "실패"
+    },
+    "severity": {
+      "safe": "안전",
+      "low": "경미",
+      "medium": "보통",
+      "critical": "위험"
+    },
+    "downloadReport": "PDF 보고서 다운로드"
+  },
+  "billing": {
+    "title": "요금제",
+    "trial": "30일 무료 체험 중",
+    "trialEnds": "체험 종료",
+    "currentPlan": "현재 플랜",
+    "upgrade": "업그레이드",
+    "plans": {
+      "free": { "name": "무료", "price": "₩0", "limit": "3건/월" },
+      "starter": { "name": "스타터", "price": "₩29,000/월", "limit": "20건/월" },
+      "professional": { "name": "프로", "price": "₩89,000/월", "limit": "100건/월" },
+      "business": { "name": "비즈니스", "price": "₩249,000/월", "limit": "500건/월" }
+    }
+  }
+}

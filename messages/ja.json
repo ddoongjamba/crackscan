@@ -1,0 +1,61 @@
+{
+  "common": {
+    "appName": "CrackScan",
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "download": "ダウンロード"
+  },
+  "auth": {
+    "login": "ログイン",
+    "signup": "新規登録",
+    "logout": "ログアウト",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "continueWithGoogle": "Googleで続ける"
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "noJobs": "検査履歴がありません",
+    "newInspection": "新しい検査を開始"
+  },
+  "upload": {
+    "title": "外壁写真のアップロード",
+    "dragDrop": "写真をドラッグまたはクリックしてアップロード",
+    "maxFiles": "最大10枚",
+    "locationLabel": "建物名（任意）",
+    "startAnalysis": "分析開始",
+    "analyzing": "分析中..."
+  },
+  "job": {
+    "status": {
+      "pending": "待機中",
+      "processing": "分析中",
+      "completed": "完了",
+      "failed": "失敗"
+    },
+    "severity": {
+      "safe": "安全",
+      "low": "軽微",
+      "medium": "中程度",
+      "critical": "危険"
+    },
+    "downloadReport": "PDFレポートをダウンロード"
+  },
+  "billing": {
+    "title": "料金プラン",
+    "trial": "30日間無料トライアル中",
+    "trialEnds": "トライアル終了",
+    "currentPlan": "現在のプラン",
+    "upgrade": "アップグレード",
+    "plans": {
+      "free": { "name": "無料", "price": "¥0", "limit": "3件/月" },
+      "starter": { "name": "スターター", "price": "¥3,200/月", "limit": "20件/月" },
+      "professional": { "name": "プロ", "price": "¥9,800/月", "limit": "100件/月" },
+      "business": { "name": "ビジネス", "price": "¥27,000/月", "limit": "500件/月" }
+    }
+  }
+}

@@ -1,7 +1,22 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
+import createNextIntlPlugin from 'next-intl/plugin'
+
+const withNextIntl = createNextIntlPlugin('./lib/i18n.ts')
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  // sharp Vercel(Amazon Linux) 바이너리 명시
+  experimental: {
+    serverComponentsExternalPackages: ['sharp', '@react-pdf/renderer'],
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/**',
+      },
+    ],
+  },
+}
 
-export default nextConfig;
+export default withNextIntl(nextConfig)
