@@ -102,10 +102,19 @@ export default function BillingPage() {
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         {PLANS.map((p) => {
           const isCurrentBase = profile?.plan === p.key && !isTrialActive
+          const isTrialPlan = isTrialActive && p.key === 'professional'
+          const highlighted = isCurrentBase || isTrialPlan
           return (
-            <Card key={p.key} className={isCurrentBase ? 'border-blue-500 border-2' : ''}>
+            <Card key={p.key} className={highlighted ? 'ring-2 ring-blue-500' : ''}>
               <CardHeader>
-                <CardTitle className="text-base">{p.name}</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">{p.name}</CardTitle>
+                  {isTrialPlan && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                      체험 중
+                    </span>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
