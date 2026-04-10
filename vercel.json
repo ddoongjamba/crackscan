@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install --os=linux --cpu=x64 sharp && npm run build",
+  "buildCommand": "npm run build",
   "functions": {
     "app/api/**": {
       "maxDuration": 10
