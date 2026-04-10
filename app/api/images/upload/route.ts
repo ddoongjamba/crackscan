@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,7 +21,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 잡이 본인 소유인지 확인
-  const { data: job } = await supabase
+  const { data: job } = await db
     .from('analysis_jobs')
     .select('id')
     .eq('id', jobId)
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // analysis_images 레코드 생성
-  await supabase.from('analysis_images').insert({
+  await db.from('analysis_images').insert({
     job_id: jobId,
     user_id: user.id,
     storage_path: storagePath,

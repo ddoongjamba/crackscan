@@ -16,6 +16,7 @@ export interface Database {
           full_name: string | null
           locale: Locale
           plan: Plan
+          trial_ends_at: string | null
           created_at: string
           updated_at: string
         }

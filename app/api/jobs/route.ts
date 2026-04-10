@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getEffectiveLimit } from '@/lib/plans'
+import type { Plan } from '@/lib/supabase/types'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,30 +22,14 @@ export async function POST(req: NextRequest) {
   const period = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
 
   const [profileRes, usageRes] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', user.id)
-      .single(),
-    supabase
-      .from('usage')
-      .select('job_count')
-      .eq('user_id', user.id)
-      .eq('period', period)
-      .maybeSingle(),
+    db.from('profiles').select('plan, trial_ends_at, locale').eq('id', user.id).single(),
+    db.from('usage').select('job_count').eq('user_id', user.id).eq('period', period).maybeSingle(),
   ])
 
-  const subscriptionRes = await supabase
-    .from('subscriptions')
-    .select('trial_ends_at')
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .maybeSingle()
-
-  const plan = profileRes.data?.plan ?? 'free'
-  const trialEndsAt = subscriptionRes.data?.trial_ends_at ?? null
-  const usedCount = usageRes.data?.job_count ?? 0
-  const limit = getEffectiveLimit(plan as any, trialEndsAt)
+  const plan: Plan = profileRes.data?.plan ?? 'free'
+  const trialEndsAt: string | null = profileRes.data?.trial_ends_at ?? null
+  const usedCount: number = usageRes.data?.job_count ?? 0
+  const limit = getEffectiveLimit(plan, trialEndsAt)
 
   if (usedCount >= limit) {
     return NextResponse.json(
@@ -52,32 +39,34 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 잡 생성 ───────────────────────────────────────────────
-  const { data: job, error } = await supabase
+  const { data: job, error } = await db
     .from('analysis_jobs')
     .insert({
       user_id: user.id,
       image_count: imageCount,
       location_label: locationLabel ?? null,
-      locale: profileRes.data ? (profileRes.data as any).locale ?? 'ko' : 'ko',
+      locale: profileRes.data?.locale ?? 'ko',
     })
     .select()
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // ── usage 증가 (upsert) ───────────────────────────────────
-  await supabase.rpc('increment_usage', { p_user_id: user.id, p_period: period })
+  // ── usage 증가 ───────────────────────────────────────────
+  await db.rpc('increment_usage', { p_user_id: user.id, p_period: period })
 
   return NextResponse.json({ job }, { status: 201 })
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data: jobs, error } = await supabase
+  const { data: jobs, error } = await db
     .from('analysis_jobs')
     .select('*, reports(storage_path)')
     .eq('user_id', user.id)

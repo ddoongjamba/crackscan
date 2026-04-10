@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/lib/supabase/types'
 
-const supabase = createClient<Database>(
+// 서버 전용 service role 클라이언트 — 동적 컬럼 업데이트 호환
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const supabase = createClient<any>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -35,13 +36,8 @@ export async function POST(req: NextRequest) {
     case 'subscription.updated': {
       const productId: string = data.productId ?? ''
       const plan = PLAN_BY_PRODUCT[productId] ?? 'free'
-      const isNew = type === 'subscription.created'
 
-      // trial_ends_at: 신규 구독이면 지금부터 30일
-      const trialEndsAt = isNew
-        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-        : undefined
-
+      // trial은 가입 즉시 profiles.trial_ends_at으로 관리 — 여기서 설정 안 함
       await supabase.from('subscriptions').upsert({
         id: data.id,
         user_id: userId,
@@ -50,7 +46,6 @@ export async function POST(req: NextRequest) {
         polar_product_id: productId,
         current_period_start: data.currentPeriodStart ?? null,
         current_period_end: data.currentPeriodEnd ?? null,
-        ...(trialEndsAt ? { trial_ends_at: trialEndsAt } : {}),
       })
 
       await supabase

@@ -8,12 +8,14 @@ export async function POST(
 ) {
   const { jobId } = await params
   const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // 잡 + 이미지 목록 조회
-  const { data: job } = await supabase
+  const { data: job } = await db
     .from('analysis_jobs')
     .select('*, analysis_images(*)')
     .eq('id', jobId)
@@ -25,13 +27,13 @@ export async function POST(
     return NextResponse.json({ error: 'Job already started' }, { status: 409 })
   }
 
-  const images = (job as any).analysis_images as { id: string; storage_path: string }[]
+  const images = job.analysis_images as { id: string; storage_path: string }[]
   if (!images || images.length === 0) {
     return NextResponse.json({ error: 'No images to process' }, { status: 400 })
   }
 
   // 잡 상태 → processing
-  await supabase
+  await db
     .from('analysis_jobs')
     .update({ status: 'processing' })
     .eq('id', jobId)
@@ -43,7 +45,7 @@ export async function POST(
         jobId,
         imageId: image.id,
         storagePath: image.storage_path,
-        locale: (job as any).locale ?? 'ko',
+        locale: job.locale ?? 'ko',
       })
     )
   )
