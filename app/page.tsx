@@ -23,10 +23,10 @@ const FEATURES = [
 ]
 
 const PLANS = [
-  { key: 'free' as const, name: '무료', price: '₩0', period: '', highlight: false, badge: null, cta: '시작하기' },
-  { key: 'starter' as const, name: '스타터', price: '₩29,000', period: '/월', highlight: false, badge: null, cta: '구독하기' },
-  { key: 'professional' as const, name: '프로', price: '₩89,000', period: '/월', highlight: true, badge: '30일 무료 체험', cta: '무료로 시작하기' },
-  { key: 'business' as const, name: '비즈니스', price: '₩249,000', period: '/월', highlight: false, badge: null, cta: '구독하기' },
+  { key: 'free' as const, name: '무료', price: '₩0', period: '', highlight: false, recommended: false },
+  { key: 'starter' as const, name: '스타터', price: '₩29,000', period: '/월', highlight: false, recommended: false },
+  { key: 'professional' as const, name: '프로', price: '₩89,000', period: '/월', highlight: true, recommended: true },
+  { key: 'business' as const, name: '비즈니스', price: '₩249,000', period: '/월', highlight: false, recommended: false },
 ]
 
 export default function LandingPage() {
@@ -111,17 +111,17 @@ export default function LandingPage() {
         <section className="py-20 px-4 bg-gray-50">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3">합리적인 요금제</h2>
-            <p className="text-center text-gray-500 mb-12">프로 플랜 30일 무료 체험 후 결정하세요</p>
+            <p className="text-center text-gray-500 mb-12">모든 플랜 30일 무료 체험 후 결정하세요</p>
             <div className="grid sm:grid-cols-4 gap-4">
               {PLANS.map((plan) => (
-                <Card key={plan.key} className={`relative ${plan.highlight ? 'border-blue-500 border-2 shadow-md' : ''}`}>
-                  {plan.badge && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-blue-600 text-white text-xs px-2 whitespace-nowrap">{plan.badge}</Badge>
-                    </div>
-                  )}
+                <Card key={plan.key} className={plan.highlight ? 'ring-2 ring-blue-500 shadow-md' : ''}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-semibold text-gray-600">{plan.name}</CardTitle>
+                    <div className="flex items-center gap-2 mb-1">
+                      <CardTitle className="text-sm font-semibold text-gray-600">{plan.name}</CardTitle>
+                      {plan.recommended && (
+                        <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0">추천</Badge>
+                      )}
+                    </div>
                     <div className="flex items-baseline gap-0.5">
                       <span className="text-2xl font-bold">{plan.price}</span>
                       <span className="text-sm text-gray-400">{plan.period}</span>
@@ -131,7 +131,7 @@ export default function LandingPage() {
                     <p className="text-sm text-gray-500">{PLAN_LIMITS[plan.key]}건/월</p>
                     <Link href="/signup">
                       <Button className="w-full" variant={plan.highlight ? 'default' : 'outline'} size="sm">
-                        {plan.cta}
+                        무료 체험 시작
                       </Button>
                     </Link>
                   </CardContent>
