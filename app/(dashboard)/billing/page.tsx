@@ -71,7 +71,7 @@ export default function BillingPage() {
   const limit = PLAN_LIMITS[effectivePlan as Plan]
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4 space-y-6">
+    <div className="max-w-5xl mx-auto py-10 px-4 space-y-6">
       <h1 className="text-2xl font-bold">요금제</h1>
 
       {/* 현재 상태 */}
@@ -99,7 +99,7 @@ export default function BillingPage() {
       </Card>
 
       {/* 플랜 목록 */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         {PLANS.map((p) => {
           const isCurrentBase = profile?.plan === p.key && !isTrialActive
           return (
@@ -109,8 +109,8 @@ export default function BillingPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-xl font-bold">{p.priceKRW}</p>
-                  <p className="text-sm text-gray-400">{p.priceJPY}</p>
+                  <p className="text-lg font-bold whitespace-nowrap">{p.priceKRW}</p>
+                  <p className="text-sm text-gray-400 whitespace-nowrap">{p.priceJPY}</p>
                 </div>
                 <p className="text-sm text-gray-500">{PLAN_LIMITS[p.key]}건/월</p>
                 {isCurrentBase ? (
