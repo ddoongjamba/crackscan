@@ -1,8 +1,9 @@
 import { defineConfig } from '@trigger.dev/sdk/v3'
 
 export default defineConfig({
-  project: 'proj_byhmnbhfgddhbxafnecq', // ⚠️ Trigger.dev 대시보드 → Settings → Project ref 로 교체
+  project: 'proj_byhmnbhfgddhbxafnecq',
   dirs: ['./trigger'],
+  maxDuration: 300,
   retries: {
     enabledInDev: false,
     default: {
