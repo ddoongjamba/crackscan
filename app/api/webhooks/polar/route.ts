@@ -36,13 +36,14 @@ export async function POST(req: NextRequest) {
     case 'subscription.updated': {
       const productId: string = data.productId ?? ''
       const plan = PLAN_BY_PRODUCT[productId] ?? 'free'
+      const isActive = data.status === 'active' || data.status === 'trialing'
 
       // trial은 가입 즉시 profiles.trial_ends_at으로 관리 — 여기서 설정 안 함
       await supabase.from('subscriptions').upsert({
         id: data.id,
         user_id: userId,
         plan,
-        status: data.status === 'active' ? 'active' : 'canceled',
+        status: isActive ? 'active' : 'canceled',
         polar_product_id: productId,
         current_period_start: data.currentPeriodStart ?? null,
         current_period_end: data.currentPeriodEnd ?? null,
