@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { LogoutButton } from './logout-button'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -17,6 +18,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Link href="/upload" className="text-gray-600 hover:text-gray-900">업로드</Link>
             <Link href="/jobs" className="text-gray-600 hover:text-gray-900">내역</Link>
             <Link href="/billing" className="text-gray-600 hover:text-gray-900">요금제</Link>
+            <LogoutButton />
           </nav>
         </div>
       </header>
