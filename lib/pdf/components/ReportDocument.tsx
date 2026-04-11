@@ -1,3 +1,4 @@
+import path from 'path'
 import {
   Document,
   Page,
@@ -9,11 +10,16 @@ import {
   Svg,
   Rect,
 } from '@react-pdf/renderer'
-import { NOTO_SANS_KR_B64, NOTO_SANS_JP_B64 } from '../fonts-base64'
 
-// 한국어 · 일본어 폰트 등록 (base64 번들 — CDN/파일시스템 의존성 없음)
-Font.register({ family: 'NotoSansKR', src: NOTO_SANS_KR_B64 })
-Font.register({ family: 'NotoSansJP', src: NOTO_SANS_JP_B64 })
+// 한국어 · 일본어 폰트 — @fontsource npm 패키지 (node_modules 경로, Docker에서도 항상 존재)
+Font.register({
+  family: 'NotoSansKR',
+  src: path.join(process.cwd(), 'node_modules/@fontsource/noto-sans-kr/files/noto-sans-kr-korean-400-normal.woff'),
+})
+Font.register({
+  family: 'NotoSansJP',
+  src: path.join(process.cwd(), 'node_modules/@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff'),
+})
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'NotoSansKR', fontSize: 10, color: '#1a1a1a' },
