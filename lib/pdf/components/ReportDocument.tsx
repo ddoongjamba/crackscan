@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 8 },
   divider: { borderBottom: '1pt solid #e5e5e5', marginVertical: 12 },
   pageNumber: { position: 'absolute', bottom: 20, right: 40, fontSize: 8, color: '#aaa' },
+  disclaimer: { position: 'absolute', bottom: 36, left: 40, right: 120, fontSize: 7, color: '#aaa', lineHeight: 1.4 },
 })
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -80,6 +81,9 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
     imageDetail: isJa ? '画像詳細' : '이미지 상세',
     noDetection: isJa ? '異常なし' : '이상 없음',
     confidence: isJa ? '信頼度' : '신뢰도',
+    disclaimer: isJa
+      ? '本レポートはAI解析による参考データであり、法的判断の根拠として使用することはできません。最終的な安全審査の責任は、図面を承認する専門技術者にあります。'
+      : '본 보고서는 AI 분석을 통한 참고용 데이터로 법적 판단의 근거로 사용될 수 없으며, 최종 안전 검토의 책임은 도면을 승인하는 전문 기술자에게 있습니다.',
   }
 
   const formattedDate = new Date(job.created_at).toLocaleDateString(
@@ -129,6 +133,7 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
           </View>
         )}
 
+        <Text style={styles.disclaimer} fixed>{labels.disclaimer}</Text>
         <Text
           style={styles.pageNumber}
           render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
