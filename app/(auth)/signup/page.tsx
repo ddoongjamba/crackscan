@@ -64,7 +64,7 @@ export default function SignupPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="홍길동"
+
                 autoComplete="name"
               />
             </div>
