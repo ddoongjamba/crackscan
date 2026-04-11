@@ -25,9 +25,17 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // OAuth code가 잘못된 경로에 붙어서 오면 /auth/callback으로 리다이렉트
+  const code = request.nextUrl.searchParams.get('code')
+  const pathname = request.nextUrl.pathname
+  if (code && pathname !== '/auth/callback') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/callback'
+    return NextResponse.redirect(url)
+  }
+
   const { data: { user } } = await supabase.auth.getUser()
 
-  const pathname = request.nextUrl.pathname
   const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p))
 
   if (isProtected && !user) {
