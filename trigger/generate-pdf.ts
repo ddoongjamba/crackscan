@@ -1,8 +1,26 @@
 import { task, logger } from '@trigger.dev/sdk/v3'
-import { renderToBuffer } from '@react-pdf/renderer'
+import { renderToBuffer, Font } from '@react-pdf/renderer'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { ReportDocument } from '@/lib/pdf/components/ReportDocument'
+import { NOTO_SANS_KR_B64, NOTO_SANS_JP_B64 } from '@/lib/pdf/fonts-base64'
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+
+// 폰트를 /tmp/에 파일로 쓰고 Font.register — base64는 esbuild 번들에 포함됨
+function setupFonts() {
+  const tmpDir = os.tmpdir()
+  const krPath = path.join(tmpDir, 'NotoSansKR-Regular.ttf')
+  const jpPath = path.join(tmpDir, 'NotoSansJP-Regular.ttf')
+
+  const strip = (b64: string) => b64.replace(/^data:font\/ttf;base64,/, '')
+  if (!fs.existsSync(krPath)) fs.writeFileSync(krPath, Buffer.from(strip(NOTO_SANS_KR_B64), 'base64'))
+  if (!fs.existsSync(jpPath)) fs.writeFileSync(jpPath, Buffer.from(strip(NOTO_SANS_JP_B64), 'base64'))
+
+  Font.register({ family: 'NotoSansKR', src: krPath })
+  Font.register({ family: 'NotoSansJP', src: jpPath })
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const supabase = createClient<any>(
@@ -15,6 +33,8 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export const generatePdfTask = task({
   id: 'generate-pdf',
   run: async ({ jobId }: { jobId: string }) => {
+    setupFonts()
+
     // 잡 + 이미지 전체 로드
     const { data: job, error } = await supabase
       .from('analysis_jobs')

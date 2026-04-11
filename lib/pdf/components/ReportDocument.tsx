@@ -1,4 +1,3 @@
-import path from 'path'
 import {
   Document,
   Page,
@@ -11,15 +10,7 @@ import {
   Rect,
 } from '@react-pdf/renderer'
 
-// 한국어 · 일본어 폰트 — @fontsource npm 패키지 (node_modules 경로, Docker에서도 항상 존재)
-Font.register({
-  family: 'NotoSansKR',
-  src: path.join(process.cwd(), 'node_modules/@fontsource/noto-sans-kr/files/noto-sans-kr-korean-400-normal.woff'),
-})
-Font.register({
-  family: 'NotoSansJP',
-  src: path.join(process.cwd(), 'node_modules/@fontsource/noto-sans-jp/files/noto-sans-jp-japanese-400-normal.woff'),
-})
+// 폰트 등록은 generate-pdf.ts의 setupFonts()에서 수행 (Trigger.dev 런타임 환경 대응)
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'NotoSansKR', fontSize: 10, color: '#1a1a1a' },
