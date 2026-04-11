@@ -61,11 +61,12 @@ export const generatePdfTask = task({
     if (uploadError) throw new Error(`PDF upload failed: ${uploadError.message}`)
 
     // reports 테이블 저장
-    await supabase.from('reports').upsert({
+    const { error: reportError } = await supabase.from('reports').upsert({
       job_id: jobId,
       user_id: job.user_id,
       storage_path: reportPath,
     })
+    if (reportError) logger.warn('reports upsert failed', { reportError })
 
     // severity_summary 집계
     const summary = { safe: 0, low: 0, medium: 0, critical: 0 }
@@ -85,17 +86,21 @@ export const generatePdfTask = task({
 
     // 이메일 알림 (PDF 첨부 없음 — 대시보드 링크만)
     if (profile?.email) {
-      const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/jobs/${jobId}`
-      const isJa = (profile.locale ?? 'ko') === 'ja'
+      try {
+        const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/jobs/${jobId}`
+        const isJa = (profile.locale ?? 'ko') === 'ja'
 
-      await resend.emails.send({
-        from: 'CrackScan <noreply@crackscan.io>',
-        to: profile.email,
-        subject: isJa ? '【CrackScan】ひび割れ分析が完了しました' : '[CrackScan] 균열 분석이 완료되었습니다',
-        html: isJa
-          ? `<p>分析が完了しました。<a href="${dashboardUrl}">ダッシュボード</a>からPDFレポートをダウンロードしてください。</p>`
-          : `<p>분석이 완료되었습니다. <a href="${dashboardUrl}">대시보드</a>에서 PDF 보고서를 다운로드하세요.</p>`,
-      })
+        await resend.emails.send({
+          from: 'CrackScan <noreply@crackscan.io>',
+          to: profile.email,
+          subject: isJa ? '【CrackScan】ひび割れ分析が完了しました' : '[CrackScan] 균열 분석이 완료되었습니다',
+          html: isJa
+            ? `<p>分析が完了しました。<a href="${dashboardUrl}">ダッシュボード</a>からPDFレポートをダウンロードしてください。</p>`
+            : `<p>분석이 완료되었습니다. <a href="${dashboardUrl}">대시보드</a>에서 PDF 보고서를 다운로드하세요.</p>`,
+        })
+      } catch (emailError) {
+        logger.warn('Email send failed', { emailError })
+      }
     }
 
     logger.info('PDF generated', { jobId, reportPath })

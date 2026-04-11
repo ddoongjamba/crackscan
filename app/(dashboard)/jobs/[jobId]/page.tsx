@@ -80,10 +80,16 @@ export default function JobDetailPage() {
   }, [jobId])
 
   async function downloadPdf() {
-    if (!job?.reports?.[0]) return
+    // reports 테이블 우선, 없으면 storage path 직접 구성
+    let storagePath = job?.reports?.[0]?.storage_path
+    if (!storagePath) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      storagePath = `jobs/${user.id}/${jobId}/report.pdf`
+    }
     const { data } = await supabase.storage
       .from('crack-images')
-      .createSignedUrl(job.reports[0].storage_path, 60)
+      .createSignedUrl(storagePath, 60)
     if (data?.signedUrl) window.open(data.signedUrl, '_blank')
   }
 
@@ -105,8 +111,11 @@ export default function JobDetailPage() {
             {new Date(job.created_at).toLocaleDateString('ko-KR')} · {job.image_count}장
           </p>
         </div>
-        {job.status === 'completed' && job.reports?.length > 0 && (
-          <Button onClick={downloadPdf}>PDF 보고서 다운로드</Button>
+        {job.status === 'completed' && (
+          <div className="flex gap-2">
+            <Button onClick={downloadPdf}>PDF 보고서 다운로드</Button>
+            <Button variant="outline" onClick={loadJob}>새로고침</Button>
+          </div>
         )}
       </div>
 
