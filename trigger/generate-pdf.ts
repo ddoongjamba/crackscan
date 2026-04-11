@@ -1,7 +1,6 @@
 import { task, logger } from '@trigger.dev/sdk/v3'
 import { renderToBuffer, Font } from '@react-pdf/renderer'
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
 import { ReportDocument } from '@/lib/pdf/components/ReportDocument'
 import { NOTO_SANS_KR_B64, NOTO_SANS_JP_B64 } from '@/lib/pdf/fonts-base64'
 import fs from 'fs'
@@ -28,7 +27,6 @@ const supabase = createClient<any>(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 export const generatePdfTask = task({
   id: 'generate-pdf',
@@ -97,25 +95,6 @@ export const generatePdfTask = task({
       .from('analysis_jobs')
       .update({ status: 'completed', severity_summary: summary })
       .eq('id', jobId)
-
-    // 이메일 알림 (PDF 첨부 없음 — 대시보드 링크만)
-    if (profile?.email) {
-      try {
-        const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL}/jobs/${jobId}`
-        const isJa = (profile.locale ?? 'ko') === 'ja'
-
-        await resend.emails.send({
-          from: 'CrackScan <noreply@crackscan.io>',
-          to: profile.email,
-          subject: isJa ? '【CrackScan】ひび割れ分析が完了しました' : '[CrackScan] 균열 분석이 완료되었습니다',
-          html: isJa
-            ? `<p>分析が完了しました。<a href="${dashboardUrl}">ダッシュボード</a>からPDFレポートをダウンロードしてください。</p>`
-            : `<p>분석이 완료되었습니다. <a href="${dashboardUrl}">대시보드</a>에서 PDF 보고서를 다운로드하세요.</p>`,
-        })
-      } catch (emailError) {
-        logger.warn('Email send failed', { emailError })
-      }
-    }
 
     logger.info('PDF generated', { jobId, reportPath })
   },
