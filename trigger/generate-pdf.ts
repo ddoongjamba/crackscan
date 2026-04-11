@@ -47,9 +47,23 @@ export const generatePdfTask = task({
     const images = (job as any).analysis_images as any[]
     const profile = (job as any).profiles
 
+    // 어노테이션 이미지 다운로드 → base64 변환 (PDF에 삽입)
+    const imageDataMap: Record<string, string> = {}
+    for (const img of images) {
+      const annotatedPath = img.storage_path?.replace('/original/', '/annotated/')
+      if (!annotatedPath) continue
+      const { data: imgData } = await supabase.storage
+        .from('crack-images')
+        .download(annotatedPath)
+      if (imgData) {
+        const imgBuffer = Buffer.from(await imgData.arrayBuffer())
+        imageDataMap[img.id] = `data:image/jpeg;base64,${imgBuffer.toString('base64')}`
+      }
+    }
+
     // PDF 생성 (@react-pdf/renderer)
     const pdfBuffer = await renderToBuffer(
-      ReportDocument({ job: job as any, images, locale: profile?.locale ?? 'ko' })
+      ReportDocument({ job: job as any, images, locale: profile?.locale ?? 'ko', imageDataMap })
     )
 
     // Supabase Storage 저장

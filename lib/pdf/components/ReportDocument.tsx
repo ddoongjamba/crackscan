@@ -6,8 +6,6 @@ import {
   Image,
   Font,
   StyleSheet,
-  Svg,
-  Rect,
 } from '@react-pdf/renderer'
 
 // 폰트 등록은 generate-pdf.ts의 setupFonts()에서 수행 (Trigger.dev 런타임 환경 대응)
@@ -150,28 +148,10 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
             </Text>
             <View style={styles.divider} />
 
-            {/* 이미지 + SVG bbox 오버레이 */}
+            {/* 어노테이션 이미지 (bbox가 이미 그려진 이미지) */}
             {imgSrc && (
               <View style={styles.imageWrapper}>
                 <Image src={imgSrc} style={{ width: '100%' }} />
-                <Svg
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
-                  viewBox="0 0 1 1"
-                  preserveAspectRatio="none"
-                >
-                  {detections.map((d, i) => (
-                    <Rect
-                      key={i}
-                      x={d.bbox.x}
-                      y={d.bbox.y}
-                      width={d.bbox.width}
-                      height={d.bbox.height}
-                      strokeWidth={0.005}
-                      stroke={SEVERITY_COLORS[d.severity] ?? '#ff0000'}
-                      fill="none"
-                    />
-                  ))}
-                </Svg>
               </View>
             )}
 
