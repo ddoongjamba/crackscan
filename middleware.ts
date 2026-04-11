@@ -37,11 +37,18 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p))
+  const isAuthPage = pathname === '/login' || pathname === '/signup'
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(url)
+  }
+
+  if (isAuthPage && user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/upload'
     return NextResponse.redirect(url)
   }
 
