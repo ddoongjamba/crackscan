@@ -1,5 +1,4 @@
-'use client'
-
+import path from 'path'
 import {
   Document,
   Page,
@@ -12,15 +11,15 @@ import {
   Rect,
 } from '@react-pdf/renderer'
 
-// 한국어 · 일본어 폰트 등록
+// 한국어 · 일본어 폰트 등록 (로컬 번들 파일 사용 — CDN URL 만료 방지)
 Font.register({
   family: 'NotoSansKR',
-  src: 'https://fonts.gstatic.com/s/notosanskr/v36/PbyxFmXiEBPT4ITbgNA5Cgms3VYcOA-vvnIzzuoyeLTq8H4hfeE.woff2',
+  src: path.join(process.cwd(), 'public/fonts/NotoSansKR-Regular.ttf'),
 })
 
 Font.register({
   family: 'NotoSansJP',
-  src: 'https://fonts.gstatic.com/s/notosansjp/v52/-F6jfjtqLzI2JPCgQBnw7HFQMisq1H1hj-sNFQ.woff2',
+  src: path.join(process.cwd(), 'public/fonts/NotoSansJP-Regular.ttf'),
 })
 
 const styles = StyleSheet.create({
