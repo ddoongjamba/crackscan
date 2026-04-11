@@ -4,6 +4,9 @@ export default defineConfig({
   project: 'proj_byhmnbhfgddhbxafnecq',
   dirs: ['./trigger'],
   maxDuration: 300,
+  build: {
+    additionalFiles: ['./public/fonts/**'],
+  },
   retries: {
     enabledInDev: false,
     default: {
