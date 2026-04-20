@@ -22,7 +22,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **비동기 잡 큐:** **Trigger.dev** — 이미지별 태스크 분리, Vercel 타임아웃 우회. 대안: Upstash QStash, Inngest (무료 티어·설정 난이도 비교 후 확정)
 - **i18n:** `next-intl` (App Router 지원) — 지원 로케일: `ko`, `ja`
 - **Payment:** Polar.sh — 1개월 무료 trial 후 구독 전환 (한국·일본 모두 Polar.sh 사용)
-- **이메일:** Resend — 알림 전용 (PDF 첨부 없음, 대시보드 링크만 발송)
 - **배포:** Vercel (API Route는 큐 발행만, 실제 처리는 Trigger.dev 워커)
 
 ## Common Commands
@@ -82,45 +81,76 @@ POST /api/jobs/[id]/process → Message Queue(Trigger.dev)에 이미지별 task 
   8. completed_count == image_count → generate-pdf task 트리거
     ↓
 [워커] generate-pdf
-  9. @react-pdf/renderer + Noto Sans KR → PDF Buffer
-  10. Supabase Storage 저장
-  11. analysis_jobs.status → 'completed'
-  12. Resend 이메일 발송 (알림 전용, 대시보드 링크)
+  9. annotated 이미지 다운로드 → base64 변환
+  10. @react-pdf/renderer + Noto Sans KR → PDF Buffer (균열 표시 이미지 포함)
+  11. Supabase Storage 저장 (jobs/{user_id}/{job_id}/report.pdf)
+  12. reports 테이블 upsert
+  13. analysis_jobs.status → 'completed'
     ↓
-클라이언트: Supabase Realtime으로 job_items.status 및 analysis_jobs.status 변화 구독
+클라이언트: Supabase Realtime으로 analysis_images.status 및 analysis_jobs.status 변화 구독
 ```
+
+### UI Pages
+
+| 경로 | 설명 | 인증 |
+|------|------|------|
+| `/` | 랜딩 페이지 — Hero, 워크플로우, 기능 소개, 요금제 테이블 | 불필요 |
+| `/login` | 이메일+비밀번호 로그인, Google OAuth | 불필요 |
+| `/signup` | 회원가입 (가입 즉시 30일 무료 trial 부여) | 불필요 |
+| `/upload` | 이미지 드래그앤드롭 업로드 + 건물명 입력 + 분석 시작 | 필요 |
+| `/jobs` | 분석 이력 목록 (Realtime 상태 구독) | 필요 |
+| `/jobs/[jobId]` | 이미지별 검출 결과 + 진행률 바 + PDF 다운로드 버튼 + 새로고침 | 필요 |
+| `/billing` | 현재 플랜, 무료 trial 만료일, Polar 구독 checkout | 필요 |
+
+**헤더 (dashboard layout):** CrackScan 로고 · 업로드 · 내역 · 요금제 · 로그아웃
+
+**PDF 보고서 내용:**
+- 표지: 건물명, 검사일, 이미지 수, severity 요약 (안전/경미/보통/위험 건수)
+- 이미지별 상세: 균열 bbox 표시된 어노테이션 이미지 + 검출 목록 (심각도, 신뢰도, 설명)
 
 ### Key Directories
 
 ```
 app/
-  (auth)/           — 로그인/회원가입/OAuth 콜백
-  (dashboard)/      — 인증된 사용자 영역 (업로드, 결과, 결제)
-  (marketing)/      — 랜딩/가격 페이지
+  (auth)/
+    login/page.tsx          — 로그인
+    signup/page.tsx         — 회원가입
+    callback/route.ts       — OAuth 콜백
+  (dashboard)/
+    layout.tsx              — 공통 헤더 + 인증 guard
+    logout-button.tsx       — 로그아웃 버튼 (클라이언트 컴포넌트)
+    upload/page.tsx         — 이미지 업로드
+    jobs/page.tsx           — 잡 목록
+    jobs/[jobId]/page.tsx   — 잡 상세 + PDF 다운로드
+    billing/page.tsx        — 결제/플랜
+  (marketing)/
+    layout.tsx              — 마케팅 헤더/푸터
+  page.tsx                  — 랜딩 페이지
   api/
-    jobs/                      — 잡 생성·조회
-    jobs/[jobId]/process/      — Trigger.dev task 발행 (처리 로직 없음)
-    images/upload/             — presigned URL 발급
-    webhooks/polar/            — Polar 구독 이벤트 처리
+    jobs/route.ts                    — 잡 생성(한도 체크) + 목록 조회
+    jobs/[jobId]/process/route.ts    — Trigger.dev task 발행 → 즉시 202
+    images/upload/route.ts           — presigned URL 발급
+    webhooks/polar/route.ts          — Polar 구독 webhook 처리
 
 trigger/
-  process-image.ts   — 이미지 1장 처리 태스크 (Claude API + DB 업데이트)
-  generate-pdf.ts    — PDF 생성 태스크 (모든 이미지 완료 후 실행)
+  process-image.ts   — 이미지 1장 처리 (Claude API + 어노테이션 + DB)
+  generate-pdf.ts    — PDF 생성 (어노테이션 이미지 포함, 모든 이미지 완료 후)
 
 lib/
   ml/
-    claude-detector.ts   — Claude Vision API 호출 및 JSON 파싱 (핵심 파일)
+    claude-detector.ts   — Claude Vision API 호출 및 JSON 파싱
     image-annotator.ts   — @napi-rs/canvas bbox 어노테이션 이미지 생성
-    yolo-detector.ts     — Modal + YOLOv8 클라이언트 (V2)
+    yolo-detector.ts     — Modal + YOLOv8 클라이언트 (V2, 미사용)
   pdf/
-    report-generator.ts
+    fonts-base64.ts           — NotoSansKR/JP TTF base64 (esbuild 번들용)
     components/
-      ReportDocument.tsx   — @react-pdf/renderer 문서 루트
+      ReportDocument.tsx      — @react-pdf/renderer 문서 루트
   polar/webhooks.ts
   supabase/client.ts|server.ts
 
+public/fonts/                — NotoSansKR/JP TTF 원본 (fonts-base64.ts 생성 소스)
 supabase/migrations/
-modal-service/main.py    — V2 YOLOv8 Python 서비스
+modal-service/main.py        — V2 YOLOv8 Python 서비스
 ```
 
 ### Database Schema (핵심 테이블)
@@ -186,7 +216,7 @@ Polar는 trial 없이 순수 유료 결제만 담당. trial 만료 후 자동으
 - [x] `app/api/jobs/[jobId]/process/` — Trigger.dev task 발행 → 즉시 202
 - [x] `app/api/webhooks/polar/` — 구독 생성 시 `trial_ends_at = now()+30d` 저장
 - [x] `trigger/process-image.ts` — Claude Vision API 분석 + DB 업데이트 (concurrencyLimit: 3)
-- [x] `trigger/generate-pdf.ts` — PDF 생성 + Resend 이메일 알림
+- [x] `trigger/generate-pdf.ts` — PDF 생성 (어노테이션 이미지 포함)
 - [x] `lib/pdf/components/ReportDocument.tsx` — @react-pdf/renderer + Noto Sans KR/JP
 - [x] `next.config.ts` — next-intl + sharp/react-pdf serverComponentsExternalPackages
 - [x] `.env.local.example` — 환경변수 템플릿
@@ -208,11 +238,11 @@ Polar는 trial 없이 순수 유료 결제만 담당. trial 만료 후 자동으
 - [x] **Supabase 마이그레이션 실제 적용** — SQL Editor에서 001~003 순서대로 실행
 - [x] **Supabase Storage 버킷 생성** (`crack-images`, Public OFF) + Storage RLS 정책
 - [x] **Supabase Realtime 활성화** — `analysis_jobs`, `analysis_images` 테이블
-- [ ] **Resend API Key 설정** + `crackscan.io` 도메인 DNS 인증
-- [ ] **Polar 상품 3개 생성** (Starter/Pro/Business) + Product ID 환경변수 등록
-- [ ] **Polar Access Token + Webhook Secret** 환경변수 등록
-- [ ] **Vercel 환경변수 전체 입력** + `git push` 배포
-- [ ] **배포 후** `NEXT_PUBLIC_APP_URL` 실제 URL로 업데이트 + Polar Webhook URL 등록
+- [x] **Resend API Key 설정** + `crackscan.io` 도메인 DNS 인증
+- [x] **Polar 상품 3개 생성** (Starter/Pro/Business) + Product ID 환경변수 등록
+- [x] **Polar Access Token + Webhook Secret** 환경변수 등록
+- [x] **Vercel 환경변수 전체 입력** + `git push` 배포
+- [x] **배포 후** `NEXT_PUBLIC_APP_URL` 실제 URL로 업데이트 + Polar Webhook URL 등록
 
 ### Phase 2 — 제품화 (7~12주): 유료 고객 10개 목표
 - [ ] 3단계 요금제 전체 + `usage` 테이블 기반 한도 적용

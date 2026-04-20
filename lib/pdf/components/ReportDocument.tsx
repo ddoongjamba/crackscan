@@ -41,11 +41,42 @@ function severityLabel(severity: string, locale: string) {
   return map[locale]?.[severity] ?? severity
 }
 
+function crackTypeLabel(crack_type: string | undefined, locale: string) {
+  if (!crack_type) return null
+  const map: Record<string, Record<string, string>> = {
+    ko: { linear: '선형균열', map: '망상균열' },
+    ja: { linear: '線形ひび割れ', map: '網状ひび割れ' },
+  }
+  return map[locale]?.[crack_type] ?? crack_type
+}
+
+function directionLabel(direction: string | undefined, locale: string) {
+  if (!direction || direction === 'unknown') return null
+  const map: Record<string, Record<string, string>> = {
+    ko: { vertical: '수직', horizontal: '수평', diagonal: '사선' },
+    ja: { vertical: '垂直', horizontal: '水平', diagonal: '斜め' },
+  }
+  return map[locale]?.[direction] ?? direction
+}
+
+function causeLabel(cause: string | undefined, locale: string) {
+  if (!cause) return null
+  const map: Record<string, Record<string, string>> = {
+    ko: { over_stress: '과응력', corrosion: '부식', general: '일반노화' },
+    ja: { over_stress: '過応力', corrosion: '腐食', general: '一般劣化' },
+  }
+  return map[locale]?.[cause] ?? cause
+}
+
 interface Detection {
   bbox: { x: number; y: number; width: number; height: number }
   confidence: number
   severity: string
   description: string
+  crack_type?: 'linear' | 'map'
+  direction?: 'vertical' | 'horizontal' | 'diagonal' | 'unknown'
+  cause?: 'over_stress' | 'corrosion' | 'general'
+  width_mm?: number
 }
 
 interface ReportDocumentProps {
@@ -84,6 +115,10 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
     disclaimer: isJa
       ? '本レポートはAI解析による参考データであり、法的判断の根拠として使用することはできません。最終的な安全審査の責任は、図面を承認する専門技術者にあります。'
       : '본 보고서는 AI 분석을 통한 참고용 데이터로 법적 판단의 근거로 사용될 수 없으며, 최종 안전 검토의 책임은 도면을 승인하는 전문 기술자에게 있습니다.',
+    crackType: isJa ? 'ひび割れ形態' : '균열 형태',
+    direction: isJa ? '方向' : '방향',
+    cause: isJa ? '原因' : '원인',
+    widthMm: isJa ? '推定幅' : '추정 폭',
   }
 
   const formattedDate = new Date(job.created_at).toLocaleDateString(
@@ -164,19 +199,34 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
             {detections.length === 0 ? (
               <Text style={{ color: '#22c55e', marginTop: 8 }}>{labels.noDetection}</Text>
             ) : (
-              detections.map((d, i) => (
-                <View key={i} style={{ marginBottom: 8, padding: 8, backgroundColor: '#f9f9f9' }}>
-                  <View style={styles.row}>
-                    <View style={{ ...styles.chip, backgroundColor: SEVERITY_COLORS[d.severity] ?? '#888' }}>
-                      <Text>{severityLabel(d.severity, locale)}</Text>
+              detections.map((d, i) => {
+                const ctLabel = crackTypeLabel(d.crack_type, locale)
+                const dirLabel = directionLabel(d.direction, locale)
+                const csLabel = causeLabel(d.cause, locale)
+                return (
+                  <View key={i} style={{ marginBottom: 8, padding: 8, backgroundColor: '#f9f9f9' }}>
+                    <View style={styles.row}>
+                      <View style={{ ...styles.chip, backgroundColor: SEVERITY_COLORS[d.severity] ?? '#888' }}>
+                        <Text>{severityLabel(d.severity, locale)}</Text>
+                      </View>
+                      <Text style={{ fontSize: 9, color: '#555' }}>
+                        {labels.confidence}: {Math.round(d.confidence * 100)}%
+                      </Text>
                     </View>
-                    <Text style={{ fontSize: 9, color: '#555' }}>
-                      {labels.confidence}: {Math.round(d.confidence * 100)}%
-                    </Text>
+                    <Text style={{ fontSize: 9 }}>{d.description}</Text>
+                    {(ctLabel || dirLabel) && (
+                      <Text style={{ fontSize: 8, color: '#666', marginTop: 3 }}>
+                        {ctLabel ? `${labels.crackType}: ${ctLabel}` : ''}{ctLabel && dirLabel ? '  |  ' : ''}{dirLabel ? `${labels.direction}: ${dirLabel}` : ''}
+                      </Text>
+                    )}
+                    {(csLabel || d.width_mm != null) && (
+                      <Text style={{ fontSize: 8, color: '#666', marginTop: 2 }}>
+                        {csLabel ? `${labels.cause}: ${csLabel}` : ''}{csLabel && d.width_mm != null ? '  |  ' : ''}{d.width_mm != null ? `${labels.widthMm}: ${d.width_mm.toFixed(2)}mm` : ''}
+                      </Text>
+                    )}
                   </View>
-                  <Text style={{ fontSize: 9 }}>{d.description}</Text>
-                </View>
-              ))
+                )
+              })
             )}
 
             <Text
