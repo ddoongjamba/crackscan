@@ -72,6 +72,24 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* 시장 지표 */}
+        <section className="py-10 px-4 border-y bg-white">
+          <div className="max-w-4xl mx-auto grid grid-cols-3 gap-6 text-center">
+            <div>
+              <p className="text-3xl font-bold text-gray-900">1조원+</p>
+              <p className="text-sm text-gray-400 mt-1">국내 시설물 유지관리 시장</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-gray-900">70%</p>
+              <p className="text-sm text-gray-400 mt-1">10년 이상 노후 교량 비율</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-gray-900">90%</p>
+              <p className="text-sm text-gray-400 mt-1">기존 대비 검사 시간 단축</p>
+            </div>
+          </div>
+        </section>
+
         {/* 워크플로우 */}
         <section className="py-12 px-4 border-y bg-gray-50">
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-6 text-center text-sm font-medium text-gray-600">

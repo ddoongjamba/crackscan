@@ -68,6 +68,23 @@ function causeLabel(cause: string | undefined, locale: string) {
   return map[locale]?.[cause] ?? cause
 }
 
+// 국토안전관리원 균열등급 기준: A(<0.1mm) B(0.1~0.3) C(0.3~0.5) D(0.5~1.0) E(≥1.0)
+function gradeFromWidth(width_mm: number | undefined, severity: string): string {
+  if (width_mm != null) {
+    if (width_mm < 0.1) return 'A'
+    if (width_mm < 0.3) return 'B'
+    if (width_mm < 0.5) return 'C'
+    if (width_mm < 1.0) return 'D'
+    return 'E'
+  }
+  const fallback: Record<string, string> = { safe: 'A', low: 'B', medium: 'C', critical: 'E' }
+  return fallback[severity] ?? 'C'
+}
+
+const GRADE_COLORS: Record<string, string> = {
+  A: '#22c55e', B: '#84cc16', C: '#eab308', D: '#f97316', E: '#ef4444',
+}
+
 interface Detection {
   bbox: { x: number; y: number; width: number; height: number }
   confidence: number
@@ -119,6 +136,10 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
     direction: isJa ? '方向' : '방향',
     cause: isJa ? '原因' : '원인',
     widthMm: isJa ? '推定幅' : '추정 폭',
+    grade: isJa ? '等級' : '등급',
+    compliance: isJa
+      ? '国土安全管理院基準準拠レポート'
+      : '국토안전관리원 기준 준수 보고서',
   }
 
   const formattedDate = new Date(job.created_at).toLocaleDateString(
@@ -133,6 +154,9 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
         <View style={{ marginBottom: 40 }}>
           <Text style={styles.coverTitle}>{labels.title}</Text>
           <Text style={styles.coverSub}>{labels.subtitle}</Text>
+          <View style={{ ...styles.chip, backgroundColor: '#1d4ed8', alignSelf: 'flex-start', marginBottom: 16 }}>
+            <Text>{labels.compliance}</Text>
+          </View>
           <View style={styles.divider} />
           <View style={styles.section}>
             <Text style={styles.label}>{labels.location}</Text>
@@ -203,11 +227,15 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
                 const ctLabel = crackTypeLabel(d.crack_type, locale)
                 const dirLabel = directionLabel(d.direction, locale)
                 const csLabel = causeLabel(d.cause, locale)
+                const grade = gradeFromWidth(d.width_mm, d.severity)
                 return (
                   <View key={i} style={{ marginBottom: 8, padding: 8, backgroundColor: '#f9f9f9' }}>
                     <View style={styles.row}>
                       <View style={{ ...styles.chip, backgroundColor: SEVERITY_COLORS[d.severity] ?? '#888' }}>
                         <Text>{severityLabel(d.severity, locale)}</Text>
+                      </View>
+                      <View style={{ ...styles.chip, backgroundColor: GRADE_COLORS[grade] ?? '#888' }}>
+                        <Text>{labels.grade} {grade}</Text>
                       </View>
                       <Text style={{ fontSize: 9, color: '#555' }}>
                         {labels.confidence}: {Math.round(d.confidence * 100)}%
