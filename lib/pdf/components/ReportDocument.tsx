@@ -11,15 +11,15 @@ import {
 // 폰트 등록은 generate-pdf.ts의 setupFonts()에서 수행 (Trigger.dev 런타임 환경 대응)
 
 const styles = StyleSheet.create({
-  page: { padding: 40, fontFamily: 'NotoSansKR', fontSize: 10, color: '#1a1a1a' },
-  pageJa: { padding: 40, fontFamily: 'NotoSansJP', fontSize: 10, color: '#1a1a1a' },
-  label: { fontSize: 8, color: '#888', marginBottom: 3 },
+  page: { padding: 40, fontFamily: 'NotoSansKR', fontSize: 20, color: '#1a1a1a' },
+  pageJa: { padding: 40, fontFamily: 'NotoSansJP', fontSize: 20, color: '#1a1a1a' },
+  label: { fontSize: 16, color: '#888', marginBottom: 4 },
   imageWrapper: { position: 'relative', marginBottom: 12 },
-  chip: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontSize: 8, color: '#fff' },
-  row: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 8 },
+  chip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, fontSize: 16, color: '#fff' },
+  row: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 10 },
   divider: { borderBottom: '1pt solid #e5e5e5', marginVertical: 16 },
-  pageNumber: { position: 'absolute', bottom: 20, right: 40, fontSize: 8, color: '#aaa' },
-  disclaimer: { position: 'absolute', bottom: 36, left: 40, right: 120, fontSize: 7, color: '#aaa', lineHeight: 1.4 },
+  pageNumber: { position: 'absolute', bottom: 20, right: 40, fontSize: 16, color: '#aaa' },
+  disclaimer: { position: 'absolute', bottom: 36, left: 40, right: 120, fontSize: 14, color: '#aaa', lineHeight: 1.4 },
 })
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -158,40 +158,40 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
 
         {/* 헤더 밴드 */}
         <View style={{ backgroundColor: '#1e3a5f', paddingTop: 44, paddingBottom: 32, paddingLeft: 40, paddingRight: 40 }}>
-          <Text style={{ fontSize: 8, color: '#93c5fd', marginBottom: 10, letterSpacing: 1 }}>
+          <Text style={{ fontSize: 16, color: '#93c5fd', marginBottom: 10, letterSpacing: 1 }}>
             CRACKSCAN  ·  AI CRACK INSPECTION REPORT
           </Text>
-          <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#ffffff', marginBottom: 6 }}>
+          <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#ffffff', marginBottom: 8 }}>
             {labels.title}
           </Text>
-          <Text style={{ fontSize: 11, color: '#93c5fd', marginBottom: 18 }}>
+          <Text style={{ fontSize: 20, color: '#93c5fd', marginBottom: 18 }}>
             {labels.subtitle}
           </Text>
-          <View style={{ backgroundColor: '#2563eb', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, alignSelf: 'flex-start' }}>
-            <Text style={{ fontSize: 8, color: '#fff' }}>{labels.compliance}</Text>
+          <View style={{ backgroundColor: '#2563eb', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 4, alignSelf: 'flex-start' }}>
+            <Text style={{ fontSize: 16, color: '#fff' }}>{labels.compliance}</Text>
           </View>
         </View>
 
         {/* 본문 */}
-        <View style={{ paddingTop: 28, paddingBottom: 80, paddingLeft: 40, paddingRight: 40 }}>
+        <View style={{ paddingTop: 28, paddingBottom: 100, paddingLeft: 40, paddingRight: 40 }}>
 
           {/* 건물명 */}
           <View style={{ marginBottom: 20 }}>
             <Text style={styles.label}>{labels.location}</Text>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1a1a1a' }}>
+            <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#1a1a1a' }}>
               {job.location_label ?? '—'}
             </Text>
           </View>
 
-          {/* 날짜 + 이미지 수 가로 나열 */}
+          {/* 날짜 + 이미지 수 */}
           <View style={{ flexDirection: 'row', gap: 40, marginBottom: 24 }}>
             <View>
               <Text style={styles.label}>{labels.date}</Text>
-              <Text style={{ fontSize: 12 }}>{formattedDate}</Text>
+              <Text style={{ fontSize: 20 }}>{formattedDate}</Text>
             </View>
             <View>
               <Text style={styles.label}>{labels.totalImages}</Text>
-              <Text style={{ fontSize: 12 }}>{images.length}{isJa ? '枚' : '장'}</Text>
+              <Text style={{ fontSize: 20 }}>{images.length}{isJa ? '枚' : '장'}</Text>
             </View>
           </View>
 
@@ -200,7 +200,7 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
           {/* 심각도 통계 카드 */}
           {job.severity_summary && (
             <View style={{ marginBottom: 28 }}>
-              <Text style={{ ...styles.label, marginBottom: 10 }}>{labels.detectionSummary}</Text>
+              <Text style={{ ...styles.label, marginBottom: 12 }}>{labels.detectionSummary}</Text>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 {(['safe', 'low', 'medium', 'critical'] as const).map((sev) => {
                   const count = job.severity_summary?.[sev] ?? 0
@@ -211,17 +211,17 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
                         flex: 1,
                         backgroundColor: SEVERITY_COLORS[sev],
                         borderRadius: 6,
-                        paddingTop: 14,
-                        paddingBottom: 14,
+                        paddingTop: 16,
+                        paddingBottom: 16,
                         paddingLeft: 8,
                         paddingRight: 8,
                         alignItems: 'center',
                       }}
                     >
-                      <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff', marginBottom: 4 }}>
+                      <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#fff', marginBottom: 4 }}>
                         {count}
                       </Text>
-                      <Text style={{ fontSize: 8, color: '#fff' }}>
+                      <Text style={{ fontSize: 14, color: '#fff' }}>
                         {severityLabel(sev, locale)}
                       </Text>
                     </View>
@@ -233,7 +233,7 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
 
           {/* A~E 등급 기준표 */}
           <View>
-            <Text style={{ ...styles.label, marginBottom: 10 }}>
+            <Text style={{ ...styles.label, marginBottom: 12 }}>
               {isJa ? 'ひび割れ等級基準 (国土安全管理院)' : '균열 등급 기준 (국토안전관리원)'}
             </Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -245,8 +245,8 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
                     borderWidth: 1,
                     borderColor: '#e5e5e5',
                     borderRadius: 5,
-                    paddingTop: 10,
-                    paddingBottom: 10,
+                    paddingTop: 12,
+                    paddingBottom: 12,
                     paddingLeft: 6,
                     paddingRight: 6,
                     alignItems: 'center',
@@ -254,19 +254,19 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
                 >
                   <View
                     style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
                       backgroundColor: GRADE_COLORS[grade],
                       alignItems: 'center',
                       justifyContent: 'center',
-                      marginBottom: 5,
+                      marginBottom: 6,
                     }}
                   >
-                    <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#fff' }}>{grade}</Text>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#fff' }}>{grade}</Text>
                   </View>
-                  <Text style={{ fontSize: 8, color: '#444', marginBottom: 2 }}>{gl}</Text>
-                  <Text style={{ fontSize: 7, color: '#999' }}>{range}</Text>
+                  <Text style={{ fontSize: 14, color: '#444', marginBottom: 3 }}>{gl}</Text>
+                  <Text style={{ fontSize: 12, color: '#999' }}>{range}</Text>
                 </View>
               ))}
             </View>
@@ -288,12 +288,12 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
 
         return (
           <Page key={img.id} size="A4" style={pageStyle}>
-            <Text style={{ fontSize: 12, fontWeight: 'bold', marginBottom: 8 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 10 }}>
               {labels.imageDetail} {idx + 1} — {img.file_name}
             </Text>
             <View style={styles.divider} />
 
-            {/* 어노테이션 이미지 (bbox가 이미 그려진 이미지) */}
+            {/* 어노테이션 이미지 */}
             {imgSrc && (
               <View style={styles.imageWrapper}>
                 <Image src={imgSrc} style={{ width: '100%' }} />
@@ -302,7 +302,7 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
 
             {/* 검출 목록 */}
             {detections.length === 0 ? (
-              <Text style={{ color: '#22c55e', marginTop: 8 }}>{labels.noDetection}</Text>
+              <Text style={{ color: '#22c55e', marginTop: 10, fontSize: 20 }}>{labels.noDetection}</Text>
             ) : (
               detections.map((d, i) => {
                 const ctLabel = crackTypeLabel(d.crack_type, locale)
@@ -313,10 +313,10 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
                   <View
                     key={i}
                     style={{
-                      marginBottom: 8,
-                      paddingTop: 8, paddingBottom: 8, paddingLeft: 12, paddingRight: 8,
+                      marginBottom: 10,
+                      paddingTop: 10, paddingBottom: 10, paddingLeft: 14, paddingRight: 10,
                       backgroundColor: '#f8fafc',
-                      borderLeftWidth: 3,
+                      borderLeftWidth: 4,
                       borderLeftColor: GRADE_COLORS[grade] ?? '#888',
                       borderRadius: 3,
                     }}
@@ -328,18 +328,18 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
                       <View style={{ ...styles.chip, backgroundColor: GRADE_COLORS[grade] ?? '#888' }}>
                         <Text>{labels.grade} {grade}</Text>
                       </View>
-                      <Text style={{ fontSize: 9, color: '#555' }}>
+                      <Text style={{ fontSize: 18, color: '#555' }}>
                         {labels.confidence}: {Math.round(d.confidence * 100)}%
                       </Text>
                     </View>
-                    <Text style={{ fontSize: 9, marginBottom: 3 }}>{d.description}</Text>
+                    <Text style={{ fontSize: 18, marginBottom: 4 }}>{d.description}</Text>
                     {(ctLabel || dirLabel) && (
-                      <Text style={{ fontSize: 8, color: '#666', marginTop: 2 }}>
+                      <Text style={{ fontSize: 16, color: '#666', marginTop: 3 }}>
                         {ctLabel ? `${labels.crackType}: ${ctLabel}` : ''}{ctLabel && dirLabel ? '  |  ' : ''}{dirLabel ? `${labels.direction}: ${dirLabel}` : ''}
                       </Text>
                     )}
                     {(csLabel || d.width_mm != null) && (
-                      <Text style={{ fontSize: 8, color: '#666', marginTop: 2 }}>
+                      <Text style={{ fontSize: 16, color: '#666', marginTop: 3 }}>
                         {csLabel ? `${labels.cause}: ${csLabel}` : ''}{csLabel && d.width_mm != null ? '  |  ' : ''}{d.width_mm != null ? `${labels.widthMm}: ${d.width_mm.toFixed(2)}mm` : ''}
                       </Text>
                     )}
