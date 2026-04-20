@@ -13,15 +13,11 @@ import {
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'NotoSansKR', fontSize: 10, color: '#1a1a1a' },
   pageJa: { padding: 40, fontFamily: 'NotoSansJP', fontSize: 10, color: '#1a1a1a' },
-  coverTitle: { fontSize: 28, fontWeight: 'bold', marginBottom: 8 },
-  coverSub: { fontSize: 14, color: '#555', marginBottom: 32 },
-  section: { marginBottom: 16 },
-  label: { fontSize: 8, color: '#888', marginBottom: 2 },
-  value: { fontSize: 11 },
+  label: { fontSize: 8, color: '#888', marginBottom: 3 },
   imageWrapper: { position: 'relative', marginBottom: 12 },
   chip: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontSize: 8, color: '#fff' },
   row: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 8 },
-  divider: { borderBottom: '1pt solid #e5e5e5', marginVertical: 12 },
+  divider: { borderBottom: '1pt solid #e5e5e5', marginVertical: 16 },
   pageNumber: { position: 'absolute', bottom: 20, right: 40, fontSize: 8, color: '#aaa' },
   disclaimer: { position: 'absolute', bottom: 36, left: 40, right: 120, fontSize: 7, color: '#aaa', lineHeight: 1.4 },
 })
@@ -147,50 +143,135 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
     { year: 'numeric', month: 'long', day: 'numeric' }
   )
 
+  const gradeTable = [
+    { grade: 'A', range: '< 0.1mm', label: isJa ? '安全' : '안전' },
+    { grade: 'B', range: '0.1~0.3mm', label: isJa ? '軽微' : '경미' },
+    { grade: 'C', range: '0.3~0.5mm', label: isJa ? '中程度' : '보통' },
+    { grade: 'D', range: '0.5~1.0mm', label: isJa ? '重大' : '심각' },
+    { grade: 'E', range: '≥ 1.0mm', label: isJa ? '危険' : '위험' },
+  ]
+
   return (
     <Document>
-      {/* ── 표지 ── */}
-      <Page size="A4" style={pageStyle}>
-        <View style={{ marginBottom: 40 }}>
-          <Text style={styles.coverTitle}>{labels.title}</Text>
-          <Text style={styles.coverSub}>{labels.subtitle}</Text>
-          <View style={{ ...styles.chip, backgroundColor: '#1d4ed8', alignSelf: 'flex-start', marginBottom: 16 }}>
-            <Text>{labels.compliance}</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.section}>
-            <Text style={styles.label}>{labels.location}</Text>
-            <Text style={styles.value}>{job.location_label ?? '—'}</Text>
-          </View>
-          <View style={styles.section}>
-            <Text style={styles.label}>{labels.date}</Text>
-            <Text style={styles.value}>{formattedDate}</Text>
-          </View>
-          <View style={styles.section}>
-            <Text style={styles.label}>{labels.totalImages}</Text>
-            <Text style={styles.value}>{images.length}</Text>
+      {/* ── 표지 (padding 0으로 풀블리드 헤더) ── */}
+      <Page size="A4" style={{ ...pageStyle, padding: 0 }}>
+
+        {/* 헤더 밴드 */}
+        <View style={{ backgroundColor: '#1e3a5f', paddingTop: 44, paddingBottom: 32, paddingLeft: 40, paddingRight: 40 }}>
+          <Text style={{ fontSize: 8, color: '#93c5fd', marginBottom: 10, letterSpacing: 1 }}>
+            CRACKSCAN  ·  AI CRACK INSPECTION REPORT
+          </Text>
+          <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#ffffff', marginBottom: 6 }}>
+            {labels.title}
+          </Text>
+          <Text style={{ fontSize: 11, color: '#93c5fd', marginBottom: 18 }}>
+            {labels.subtitle}
+          </Text>
+          <View style={{ backgroundColor: '#2563eb', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, alignSelf: 'flex-start' }}>
+            <Text style={{ fontSize: 8, color: '#fff' }}>{labels.compliance}</Text>
           </View>
         </View>
 
-        {/* severity 요약 */}
-        {job.severity_summary && (
+        {/* 본문 */}
+        <View style={{ paddingTop: 28, paddingBottom: 80, paddingLeft: 40, paddingRight: 40 }}>
+
+          {/* 건물명 */}
+          <View style={{ marginBottom: 20 }}>
+            <Text style={styles.label}>{labels.location}</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1a1a1a' }}>
+              {job.location_label ?? '—'}
+            </Text>
+          </View>
+
+          {/* 날짜 + 이미지 수 가로 나열 */}
+          <View style={{ flexDirection: 'row', gap: 40, marginBottom: 24 }}>
+            <View>
+              <Text style={styles.label}>{labels.date}</Text>
+              <Text style={{ fontSize: 12 }}>{formattedDate}</Text>
+            </View>
+            <View>
+              <Text style={styles.label}>{labels.totalImages}</Text>
+              <Text style={{ fontSize: 12 }}>{images.length}{isJa ? '枚' : '장'}</Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          {/* 심각도 통계 카드 */}
+          {job.severity_summary && (
+            <View style={{ marginBottom: 28 }}>
+              <Text style={{ ...styles.label, marginBottom: 10 }}>{labels.detectionSummary}</Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                {(['safe', 'low', 'medium', 'critical'] as const).map((sev) => {
+                  const count = job.severity_summary?.[sev] ?? 0
+                  return (
+                    <View
+                      key={sev}
+                      style={{
+                        flex: 1,
+                        backgroundColor: SEVERITY_COLORS[sev],
+                        borderRadius: 6,
+                        paddingTop: 14,
+                        paddingBottom: 14,
+                        paddingLeft: 8,
+                        paddingRight: 8,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#fff', marginBottom: 4 }}>
+                        {count}
+                      </Text>
+                      <Text style={{ fontSize: 8, color: '#fff' }}>
+                        {severityLabel(sev, locale)}
+                      </Text>
+                    </View>
+                  )
+                })}
+              </View>
+            </View>
+          )}
+
+          {/* A~E 등급 기준표 */}
           <View>
-            <Text style={{ ...styles.label, marginBottom: 8 }}>{labels.detectionSummary}</Text>
-            <View style={styles.row}>
-              {Object.entries(job.severity_summary).map(([sev, count]) => (
+            <Text style={{ ...styles.label, marginBottom: 10 }}>
+              {isJa ? 'ひび割れ等級基準 (国土安全管理院)' : '균열 등급 기준 (국토안전관리원)'}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {gradeTable.map(({ grade, range, label: gl }) => (
                 <View
-                  key={sev}
+                  key={grade}
                   style={{
-                    ...styles.chip,
-                    backgroundColor: SEVERITY_COLORS[sev] ?? '#888',
+                    flex: 1,
+                    borderWidth: 1,
+                    borderColor: '#e5e5e5',
+                    borderRadius: 5,
+                    paddingTop: 10,
+                    paddingBottom: 10,
+                    paddingLeft: 6,
+                    paddingRight: 6,
+                    alignItems: 'center',
                   }}
                 >
-                  <Text>{severityLabel(sev, locale)}: {count}</Text>
+                  <View
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      backgroundColor: GRADE_COLORS[grade],
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 5,
+                    }}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#fff' }}>{grade}</Text>
+                  </View>
+                  <Text style={{ fontSize: 8, color: '#444', marginBottom: 2 }}>{gl}</Text>
+                  <Text style={{ fontSize: 7, color: '#999' }}>{range}</Text>
                 </View>
               ))}
             </View>
           </View>
-        )}
+        </View>
 
         <Text style={styles.disclaimer} fixed>{labels.disclaimer}</Text>
         <Text
@@ -229,7 +310,17 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
                 const csLabel = causeLabel(d.cause, locale)
                 const grade = gradeFromWidth(d.width_mm, d.severity)
                 return (
-                  <View key={i} style={{ marginBottom: 8, padding: 8, backgroundColor: '#f9f9f9' }}>
+                  <View
+                    key={i}
+                    style={{
+                      marginBottom: 8,
+                      paddingTop: 8, paddingBottom: 8, paddingLeft: 12, paddingRight: 8,
+                      backgroundColor: '#f8fafc',
+                      borderLeftWidth: 3,
+                      borderLeftColor: GRADE_COLORS[grade] ?? '#888',
+                      borderRadius: 3,
+                    }}
+                  >
                     <View style={styles.row}>
                       <View style={{ ...styles.chip, backgroundColor: SEVERITY_COLORS[d.severity] ?? '#888' }}>
                         <Text>{severityLabel(d.severity, locale)}</Text>
@@ -241,9 +332,9 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
                         {labels.confidence}: {Math.round(d.confidence * 100)}%
                       </Text>
                     </View>
-                    <Text style={{ fontSize: 9 }}>{d.description}</Text>
+                    <Text style={{ fontSize: 9, marginBottom: 3 }}>{d.description}</Text>
                     {(ctLabel || dirLabel) && (
-                      <Text style={{ fontSize: 8, color: '#666', marginTop: 3 }}>
+                      <Text style={{ fontSize: 8, color: '#666', marginTop: 2 }}>
                         {ctLabel ? `${labels.crackType}: ${ctLabel}` : ''}{ctLabel && dirLabel ? '  |  ' : ''}{dirLabel ? `${labels.direction}: ${dirLabel}` : ''}
                       </Text>
                     )}
