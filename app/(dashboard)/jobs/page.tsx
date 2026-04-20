@@ -38,31 +38,40 @@ export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // 초기 로드
+  function fetchJobs() {
     fetch('/api/jobs')
       .then((r) => r.json())
       .then(({ jobs }) => {
         setJobs(jobs ?? [])
         setLoading(false)
       })
+  }
 
-    // Supabase Realtime — 진행 중인 잡 상태 변화 구독
+  useEffect(() => {
+    fetchJobs()
+
+    // Supabase Realtime — 잡 상태 변화 시 전체 재조회 (reports 조인 포함)
     const channel = supabase
       .channel('jobs-status')
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'analysis_jobs' },
-        (payload) => {
-          setJobs((prev) =>
-            prev.map((j) => (j.id === payload.new.id ? { ...j, ...payload.new } : j))
-          )
-        }
+        () => fetchJobs()
       )
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [supabase])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Realtime 실패 대비 폴링 — 처리 중인 잡이 있을 때만 5초마다 갱신
+  useEffect(() => {
+    const hasActive = jobs.some((j) => j.status === 'pending' || j.status === 'processing')
+    if (!hasActive) return
+    const timer = setInterval(fetchJobs, 5000)
+    return () => clearInterval(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobs])
 
   if (loading) {
     return <div className="max-w-3xl mx-auto py-10 px-4 text-gray-400">로딩 중...</div>

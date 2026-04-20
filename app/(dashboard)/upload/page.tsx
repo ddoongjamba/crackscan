@@ -119,7 +119,13 @@ export default function UploadPage() {
     }
 
     // 3. 분석 시작 (Trigger.dev task 발행)
-    await fetch(`/api/jobs/${jobId}/process`, { method: 'POST' })
+    const processRes = await fetch(`/api/jobs/${jobId}/process`, { method: 'POST' })
+    if (!processRes.ok) {
+      const data = await processRes.json().catch(() => ({}))
+      setError(data.error ?? '분석 시작에 실패했습니다. 잠시 후 다시 시도해주세요.')
+      setSubmitting(false)
+      return
+    }
 
     router.push(`/jobs/${jobId}`)
   }

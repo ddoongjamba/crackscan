@@ -26,12 +26,6 @@ export const processImageTask = task({
 
     // 1. status → processing
     await supabase
-      .from('analysis_jobs' as any)
-      .update({ status: 'processing' })
-      .eq('id', imageId)
-
-    // job_items 테이블 업데이트 (analysis_images → job_items 마이그레이션 후 변경)
-    await supabase
       .from('analysis_images' as any)
       .update({ status: 'processing' })
       .eq('id', imageId)

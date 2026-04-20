@@ -79,6 +79,15 @@ export default function JobDetailPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId])
 
+  // Realtime 실패 대비 폴링 — pending/processing 상태일 때만 3초마다 갱신
+  useEffect(() => {
+    if (!job) return
+    if (job.status !== 'pending' && job.status !== 'processing') return
+    const timer = setInterval(loadJob, 3000)
+    return () => clearInterval(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [job?.status])
+
   async function downloadPdf() {
     // reports 테이블 우선, 없으면 storage path 직접 구성
     let storagePath = job?.reports?.[0]?.storage_path
