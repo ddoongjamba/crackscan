@@ -18,6 +18,9 @@ interface JobImage {
     confidence: number
     description: string
   }> | null
+  gps_lat: number | null
+  gps_lng: number | null
+  gps_altitude: number | null
 }
 
 interface JobDetail {
@@ -160,6 +163,23 @@ export default function JobDetailPage() {
                 {img.status === 'completed' ? '완료' : img.status === 'failed' ? '실패' : img.status === 'processing' ? '분석 중' : '대기'}
               </Badge>
             </div>
+
+            {(img.gps_lat != null && img.gps_lng != null) && (
+              <div className="flex items-center gap-3 text-xs text-gray-400 mb-2">
+                <span>📍 {img.gps_lat.toFixed(6)}, {img.gps_lng.toFixed(6)}</span>
+                {img.gps_altitude != null && (
+                  <span>고도 {img.gps_altitude.toFixed(1)}m</span>
+                )}
+                <a
+                  href={`https://maps.google.com/?q=${img.gps_lat},${img.gps_lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  지도 보기
+                </a>
+              </div>
+            )}
 
             {img.crack_detections && img.crack_detections.length > 0 ? (
               <div className="space-y-1">

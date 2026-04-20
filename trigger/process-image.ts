@@ -3,6 +3,7 @@ import sharp from 'sharp'
 import { createClient } from '@supabase/supabase-js'
 import { detectCracks } from '@/lib/ml/claude-detector'
 import { annotateImage } from '@/lib/ml/image-annotator'
+import exifr from 'exifr'
 
 // 워커 내부 전용 — 제네릭 없이 사용 (RPC·동적 테이블명 호환)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,7 +43,24 @@ export const processImageTask = task({
 
       const buffer = Buffer.from(await fileData.arrayBuffer())
 
-      // 3. sharp 리사이즈 (max 2048px)
+      // 3. EXIF GPS 추출 (드론 촬영 이미지 대응, 없으면 null)
+      let gps_lat: number | null = null
+      let gps_lng: number | null = null
+      let gps_altitude: number | null = null
+      try {
+        const gps = await exifr.gps(buffer)
+        if (gps) {
+          gps_lat = gps.latitude ?? null
+          gps_lng = gps.longitude ?? null
+        }
+        const exif = await exifr.parse(buffer, ['GPSAltitude'])
+        if (exif?.GPSAltitude != null) gps_altitude = exif.GPSAltitude
+      } catch {
+        // EXIF 없는 일반 사진은 무시
+      }
+      logger.info('GPS extracted', { imageId, gps_lat, gps_lng, gps_altitude })
+
+      // 4. sharp 리사이즈 (max 2048px)
       const resized = await sharp(buffer)
         .resize(2048, 2048, { fit: 'inside', withoutEnlargement: true })
         .jpeg({ quality: 85 })
@@ -61,12 +79,15 @@ export const processImageTask = task({
         .from('crack-images')
         .upload(annotatedPath, annotatedBuffer, { contentType: 'image/jpeg', upsert: true })
 
-      // 6. 결과 저장
+      // 6. 결과 저장 (GPS 포함)
       await supabase
         .from('analysis_images' as any)
         .update({
           status: 'completed',
           crack_detections: detections as any,
+          gps_lat,
+          gps_lng,
+          gps_altitude,
         })
         .eq('id', imageId)
 

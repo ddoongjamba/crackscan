@@ -105,6 +105,9 @@ interface ReportDocumentProps {
     storage_path: string
     crack_detections: Detection[] | null
     status: string
+    gps_lat?: number | null
+    gps_lng?: number | null
+    gps_altitude?: number | null
   }>
   locale: 'ko' | 'ja'
   imageDataMap?: Record<string, string> // imageId → base64 data URL
@@ -133,6 +136,8 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
     cause: isJa ? '原因' : '원인',
     widthMm: isJa ? '推定幅' : '추정 폭',
     grade: isJa ? '等級' : '등급',
+    gpsCoord: isJa ? '撮影座標' : '촬영 좌표',
+    altitude: isJa ? '高度' : '고도',
     compliance: isJa
       ? '国土安全管理院基準準拠レポート'
       : '국토안전관리원 기준 준수 보고서',
@@ -292,6 +297,24 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
               {labels.imageDetail} {idx + 1} — {img.file_name}
             </Text>
             <View style={styles.divider} />
+
+            {/* GPS 좌표 (드론 촬영 이미지) */}
+            {img.gps_lat != null && img.gps_lng != null && (
+              <View style={{ flexDirection: 'row', gap: 24, marginBottom: 10 }}>
+                <View>
+                  <Text style={styles.label}>{labels.gpsCoord}</Text>
+                  <Text style={{ fontSize: 16 }}>
+                    {img.gps_lat.toFixed(6)}, {img.gps_lng.toFixed(6)}
+                  </Text>
+                </View>
+                {img.gps_altitude != null && (
+                  <View>
+                    <Text style={styles.label}>{labels.altitude}</Text>
+                    <Text style={{ fontSize: 16 }}>{img.gps_altitude.toFixed(1)} m</Text>
+                  </View>
+                )}
+              </View>
+            )}
 
             {/* 어노테이션 이미지 */}
             {imgSrc && (
