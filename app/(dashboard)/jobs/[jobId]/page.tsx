@@ -118,15 +118,15 @@ export default function JobDetailPage() {
       {/* 헤더 */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{job.location_label ?? '건물명 없음'}</h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <h1 className="text-3xl font-bold">{job.location_label ?? '건물명 없음'}</h1>
+          <p className="text-base text-gray-400 mt-1">
             {new Date(job.created_at).toLocaleDateString('ko-KR')} · {job.image_count}장
           </p>
         </div>
         {job.status === 'completed' && (
           <div className="flex gap-2">
-            <Button onClick={downloadPdf}>PDF 보고서 다운로드</Button>
-            <Button variant="outline" onClick={loadJob}>새로고침</Button>
+            <Button size="lg" onClick={downloadPdf}>PDF 보고서 다운로드</Button>
+            <Button size="lg" variant="outline" onClick={loadJob}>새로고침</Button>
           </div>
         )}
       </div>
@@ -134,7 +134,7 @@ export default function JobDetailPage() {
       {/* 진행률 */}
       {job.status === 'processing' && (
         <div>
-          <div className="flex justify-between text-sm mb-1">
+          <div className="flex justify-between text-base mb-1">
             <span className="text-gray-500">분석 중...</span>
             <span className="text-gray-400">{job.completed_count}/{job.image_count}</span>
           </div>
@@ -144,9 +144,9 @@ export default function JobDetailPage() {
 
       {/* severity 요약 */}
       {job.severity_summary && (
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-3 flex-wrap">
           {Object.entries(job.severity_summary).map(([sev, count]) => (
-            <span key={sev} className={`text-xs px-2 py-1 rounded-full font-medium ${SEVERITY_COLOR[sev] ?? ''}`}>
+            <span key={sev} className={`text-sm px-3 py-1.5 rounded-full font-medium ${SEVERITY_COLOR[sev] ?? ''}`}>
               {SEVERITY_LABEL[sev] ?? sev}: {count}
             </span>
           ))}
@@ -154,38 +154,38 @@ export default function JobDetailPage() {
       )}
 
       {/* 이미지별 결과 */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {job.analysis_images?.map((img) => (
-          <div key={img.id} className="border rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium truncate max-w-xs">{img.file_name}</p>
-              <Badge variant={img.status === 'completed' ? 'outline' : img.status === 'failed' ? 'destructive' : 'secondary'}>
+          <div key={img.id} className="border rounded-lg p-5">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-base font-semibold truncate max-w-xs">{img.file_name}</p>
+              <Badge className="text-sm px-3 py-1" variant={img.status === 'completed' ? 'outline' : img.status === 'failed' ? 'destructive' : 'secondary'}>
                 {img.status === 'completed' ? '완료' : img.status === 'failed' ? '실패' : img.status === 'processing' ? '분석 중' : '대기'}
               </Badge>
             </div>
 
             {(img.gps_lat != null && img.gps_lng != null) && (
-              <div className="flex items-center gap-3 text-xs text-gray-400 mb-2">
-                <span>📍 {img.gps_lat.toFixed(6)}, {img.gps_lng.toFixed(6)}</span>
+              <div className="flex items-center gap-4 text-sm text-gray-500 mb-3 bg-gray-50 rounded-md px-3 py-2">
+                <span className="font-medium">📍 {img.gps_lat.toFixed(6)}, {img.gps_lng.toFixed(6)}</span>
                 {img.gps_altitude != null && (
-                  <span>고도 {img.gps_altitude.toFixed(1)}m</span>
+                  <span className="font-medium">고도 {img.gps_altitude.toFixed(1)}m</span>
                 )}
                 <a
                   href={`https://maps.google.com/?q=${img.gps_lat},${img.gps_lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline"
+                  className="text-blue-500 hover:underline font-medium"
                 >
-                  지도 보기
+                  지도 보기 →
                 </a>
               </div>
             )}
 
             {img.crack_detections && img.crack_detections.length > 0 ? (
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {img.crack_detections.map((d, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs">
-                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium shrink-0 ${SEVERITY_COLOR[d.severity] ?? ''}`}>
+                  <div key={i} className="flex items-start gap-3 text-sm">
+                    <span className={`px-2 py-1 rounded text-sm font-medium shrink-0 ${SEVERITY_COLOR[d.severity] ?? ''}`}>
                       {SEVERITY_LABEL[d.severity] ?? d.severity}
                     </span>
                     <span className="text-gray-600">{d.description}</span>
@@ -194,7 +194,7 @@ export default function JobDetailPage() {
                 ))}
               </div>
             ) : img.status === 'completed' ? (
-              <p className="text-xs text-green-600">균열 없음</p>
+              <p className="text-sm text-green-600">균열 없음</p>
             ) : null}
           </div>
         ))}

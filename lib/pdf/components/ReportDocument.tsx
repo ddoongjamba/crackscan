@@ -300,19 +300,23 @@ export function ReportDocument({ job, images, locale, imageDataMap = {} }: Repor
 
             {/* GPS 좌표 (드론 촬영 이미지) */}
             {img.gps_lat != null && img.gps_lng != null && (
-              <View style={{ flexDirection: 'row', gap: 24, marginBottom: 10 }}>
-                <View>
-                  <Text style={styles.label}>{labels.gpsCoord}</Text>
-                  <Text style={{ fontSize: 16 }}>
-                    {img.gps_lat.toFixed(6)}, {img.gps_lng.toFixed(6)}
-                  </Text>
-                </View>
-                {img.gps_altitude != null && (
+              <View style={{ backgroundColor: '#f0f7ff', borderRadius: 6, padding: 14, marginBottom: 14 }}>
+                <View style={{ flexDirection: 'row', gap: 32 }}>
                   <View>
-                    <Text style={styles.label}>{labels.altitude}</Text>
-                    <Text style={{ fontSize: 16 }}>{img.gps_altitude.toFixed(1)} m</Text>
+                    <Text style={styles.label}>{labels.gpsCoord}</Text>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1d4ed8' }}>
+                      {img.gps_lat.toFixed(6)},  {img.gps_lng.toFixed(6)}
+                    </Text>
                   </View>
-                )}
+                  {img.gps_altitude != null && (
+                    <View>
+                      <Text style={styles.label}>{labels.altitude}</Text>
+                      <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1d4ed8' }}>
+                        {img.gps_altitude.toFixed(1)} m
+                      </Text>
+                    </View>
+                  )}
+                </View>
               </View>
             )}
 
